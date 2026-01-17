@@ -1,0 +1,37 @@
+import express, { Request, Response } from "express";
+import CustomerRepository from "../../customer/repository/sequelize/customer.repository";
+import CreateCustomerUseCase from "../../../usecase/customer/create/create.customer.usecase";
+import ListCustomerUseCase from "../../../usecase/customer/list/list.customer.usecase";
+
+export const customerRoutes = express.Router();
+
+customerRoutes.post("/", async (req: Request, res: Response) => {
+  const createCustomerUseCase = new CreateCustomerUseCase(new CustomerRepository());
+  try {
+    const customerDto = {
+      name: req.body.name,
+      address: {
+        street: req.body.address.street,
+        city: req.body.address.city,
+        number: req.body.address.number,
+        zip: req.body.address.zip,
+      },
+    };
+    const output = await createCustomerUseCase.execute(customerDto);
+    res.send(output);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+customerRoutes.get("/", async (req: Request, res: Response) => {
+  const listCustomerUseCase = new ListCustomerUseCase(new CustomerRepository());
+  try {
+    const output = await listCustomerUseCase.execute({});
+    res.status(200).send(output);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+export default customerRoutes;
